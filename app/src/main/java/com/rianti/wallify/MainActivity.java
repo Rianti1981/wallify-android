@@ -22,8 +22,8 @@ public class MainActivity extends Activity {
     int selected=0; String category="Semua", theme="dark"; boolean settings=false; Bitmap custom;
     LinearLayout root,content,nav; TextView title,subtitle; float downX,downY; MediaPlayer player; Uri music;
     int bg(){return theme.equals("light")?0xfff4f2ef:0xff08090d;} int fg(){return theme.equals("light")?0xff171717:Color.WHITE;} int muted(){return theme.equals("light")?0xff6b6b6b:0xffa8a8b4;}
-    @Override public void onCreate(Bundle b){super.onCreate(b); applyImmersiveMode(); build();}
-    void applyImmersiveMode(){if(Build.VERSION.SDK_INT>=30){getWindow().setDecorFitsSystemWindows(false);android.view.WindowInsetsController controller=getWindow().getInsetsController();if(controller!=null){controller.hide(android.view.WindowInsets.Type.statusBars()|android.view.WindowInsets.Type.navigationBars());controller.setSystemBarsBehavior(android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);}}else{getWindow().getDecorView().setSystemUiVisibility(5894|1024|512|4096);}}
+    @Override public void onCreate(Bundle b){super.onCreate(b);build();}
+    void applyImmersiveMode(){try{View decor=getWindow().getDecorView();decor.setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);}catch(RuntimeException ignored){}}
     @Override public void onWindowFocusChanged(boolean hasFocus){super.onWindowFocusChanged(hasFocus);if(hasFocus)applyImmersiveMode();}
     GradientDrawable shape(int c,int stroke,int r){GradientDrawable d=new GradientDrawable();d.setColor(c);d.setCornerRadius(dp(r));d.setStroke(dp(1),stroke);return d;}
     int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
       LinearLayout.LayoutParams np=new LinearLayout.LayoutParams(-1,dp(64));np.setMargins(dp(18),0,dp(18),dp(12));root.addView(nav,np);
       addNav("▦   Wallpaper",false,()->{settings=false;build();});addNav("⚙   Settings",true,()->{settings=true;build();});
       nav.setOnTouchListener((v,e)->{if(e.getAction()==0){downX=e.getRawX();downY=e.getRawY();return true;}if(e.getAction()==2){float dx=e.getRawX()-downX;float dy=e.getRawY()-downY;nav.setTranslationX(Math.max(-dp(70),Math.min(dp(70),nav.getTranslationX()+dx)));nav.setTranslationY(Math.max(-dp(22),Math.min(dp(22),nav.getTranslationY()+dy)));downX=e.getRawX();downY=e.getRawY();return true;}if(e.getAction()==1){if(Math.abs(e.getRawX()-downX)<dp(8)&&Math.abs(e.getRawY()-downY)<dp(8)){if(e.getX()<nav.getWidth()/2){settings=false;}else{settings=true;}build();}return true;}return true;});
-      setContentView(root);if(settings)showSettings();else showWallpapers();
+      setContentView(root);applyImmersiveMode();if(settings)showSettings();else showWallpapers();
     }
     void addNav(String label,boolean isSettings,Runnable action){TextView t=txt(label,13,settings==isSettings);t.setGravity(Gravity.CENTER);t.setPadding(dp(8),dp(12),dp(8),dp(12));t.setBackground(settings==isSettings?shape(0x447c83ff,0x668c91ff,22):shape(Color.TRANSPARENT,Color.TRANSPARENT,22));nav.addView(t,new LinearLayout.LayoutParams(0,-1,1));t.setOnClickListener(v->action.run());}
     void showWallpapers(){

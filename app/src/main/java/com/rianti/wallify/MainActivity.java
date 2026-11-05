@@ -32,33 +32,59 @@ public class MainActivity extends Activity {
     LinearLayout row(){LinearLayout l=new LinearLayout(this);l.setOrientation(0);l.setGravity(Gravity.CENTER_VERTICAL);return l;}
     void build(){
       root=column();root.setBackgroundColor(bg());
-      LinearLayout header=column();header.setPadding(dp(20),dp(18),dp(20),dp(12));root.addView(header);
-      TextView brand=txt("W A L L I F Y   /   3.0",11,true);brand.setTextColor(0xff9b9bff);header.addView(brand);
-      title=txt(settings?"Settings":"Discover",30,true);title.setPadding(0,dp(12),0,dp(3));header.addView(title);
-      subtitle=txt(settings?"Make it feel like yours":"Wallpaper collections",14,false);subtitle.setTextColor(muted());header.addView(subtitle);
-      ScrollView sc=new ScrollView(this);content=column();content.setPadding(dp(16),dp(8),dp(16),dp(100));sc.addView(content);root.addView(sc,new LinearLayout.LayoutParams(-1,0,1));
-      HorizontalScrollView navScroll=new HorizontalScrollView(this);navScroll.setHorizontalScrollBarEnabled(false);navScroll.setFillViewport(true);nav=row();nav.setPadding(dp(7),dp(7),dp(7),dp(7));GradientDrawable navBg=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xdd554a86,0xcc22283f,0xdd594b83});navBg.setCornerRadius(dp(30));navBg.setStroke(dp(1),0x77ffffff);nav.setBackground(navBg);
-      navScroll.addView(nav);LinearLayout.LayoutParams np=new LinearLayout.LayoutParams(-1,dp(66));np.setMargins(dp(18),0,dp(18),dp(12));root.addView(navScroll,np);
-      addNav("⌂   Beranda",0,()->{settings=false;category="Semua";build();});addNav("▦   Kategori",1,()->{settings=false;category="Pemandangan";build();});addNav("⚙   Pengaturan",2,()->{settings=true;build();});
+      LinearLayout header=column();header.setPadding(dp(20),dp(22),dp(20),dp(12));root.addView(header);
+      TextView brand=txt("✦  WALLIFY",12,true);brand.setTextColor(0xffc5a8ff);header.addView(brand);
+      title=txt(settings?"Pengaturan":"Temukan wallpaper",27,true);title.setPadding(0,dp(9),0,dp(2));header.addView(title);
+      subtitle=txt(settings?"Atur tampilan sesuai seleramu":"Buat layar HP terasa lebih hidup",13,false);subtitle.setTextColor(muted());header.addView(subtitle);
+      ScrollView sc=new ScrollView(this);sc.setFillViewport(false);content=column();content.setPadding(dp(16),dp(8),dp(16),dp(110));sc.addView(content);root.addView(sc,new LinearLayout.LayoutParams(-1,0,1));
+      HorizontalScrollView navScroll=new HorizontalScrollView(this);navScroll.setHorizontalScrollBarEnabled(false);navScroll.setFillViewport(true);
+      nav=row();nav.setPadding(dp(7),dp(7),dp(7),dp(7));GradientDrawable navBg=new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xee322c62,0xdd20264c,0xee453779});navBg.setCornerRadius(dp(34));navBg.setStroke(dp(1),0x99c6b5ff);nav.setBackground(navBg);navScroll.addView(nav);
+      LinearLayout.LayoutParams np=new LinearLayout.LayoutParams(-1,dp(68));np.setMargins(dp(18),0,dp(18),dp(12));root.addView(navScroll,np);
+      addNav("▦   Kategori",0,()->{settings=false;category="Semua";build();});
+      addNav("⌂   Beranda",1,()->{settings=false;category="Semua";build();});
+      addNav("⚙   Pengaturan",2,()->{settings=true;build();});
       setContentView(root);applyImmersiveMode();if(settings)showSettings();else showWallpapers();
     }
-    void addNav(String label,int index,Runnable action){TextView t=txt(label,13,(index==2)==settings);t.setGravity(Gravity.CENTER);t.setPadding(dp(20),dp(12),dp(20),dp(12));t.setBackground(((index==2)==settings)?shape(0x557e78d8,0x99ffffff,24):shape(Color.TRANSPARENT,Color.TRANSPARENT,24));nav.addView(t,new LinearLayout.LayoutParams(-2,-1));t.setOnClickListener(v->action.run());}
+    void addNav(String label,int index,Runnable action){
+      boolean active=(index==2&&settings)||(index!=2&&!settings&&((index==0&& !category.equals("Semua"))||(index==1&&category.equals("Semua"))));
+      TextView t=txt(label,13,true);t.setGravity(Gravity.CENTER);t.setPadding(dp(18),dp(12),dp(18),dp(12));
+      t.setBackground(active?shape(0x887d69df,0x99eee5ff,28):shape(0x332a2d55,0x33ffffff,28));
+      nav.addView(t,new LinearLayout.LayoutParams(0,-1,1));t.setOnClickListener(v->action.run());
+    }
     void showWallpapers(){
       content.removeAllViews();
-      TextView featured=txt("Explore your mood",20,true);content.addView(featured);TextView hint=txt("Pilih koleksi, lalu ketuk wallpaper favoritmu.",13,false);hint.setTextColor(muted());content.addView(hint);
-      LinearLayout chips=row();HorizontalScrollView hsv=new HorizontalScrollView(this);hsv.setHorizontalScrollBarEnabled(false);for(String c:cats){TextView x=txt(c,12,true);x.setPadding(dp(14),dp(10),dp(14),dp(10));x.setBackground(shape(category.equals(c)?0xff7779db:0x33222222,0x55ffffff,20));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,-2);p.setMargins(0,dp(14),dp(8),dp(14));chips.addView(x,p);x.setOnClickListener(v->{category=c;showWallpapers();});}hsv.addView(chips);content.addView(hsv);
-      if(category.equals("Custom")){TextView c=txt("Wallpaper dari galeri",17,true);content.addView(c);button("＋  Pilih wallpaper dari galeri",()->pick(101));if(custom!=null){View preview=new Art(this,selected);content.addView(preview,new LinearLayout.LayoutParams(-1,dp(280)));TextView mine=txt("My Custom Wallpaper  ·  Ketuk untuk melihat",14,true);mine.setPadding(0,dp(10),0,dp(12));content.addView(mine);mine.setOnClickListener(v->showDetail());button("Terapkan wallpaper custom",()->apply(WallpaperManager.FLAG_SYSTEM|WallpaperManager.FLAG_LOCK));}return;}
-      ArrayList<Integer> filtered=new ArrayList<>();for(int i=0;i<names.length;i++)if(category.equals("Semua")||types[i].equals(category))filtered.add(i);for(int k=0;k<filtered.size();k+=2){LinearLayout r=row();content.addView(r);addTile(r,filtered.get(k));if(k+1<filtered.size())addTile(r,filtered.get(k+1));} 
-      section("Live wallpapers");TextView live=txt("✦  Liquid Motion",17,true);live.setPadding(dp(16),dp(20),dp(16),dp(20));live.setBackground(shape(0xff24283a,0xff555b88,22));content.addView(live);TextView liveHint=txt("Animasi lebih ringan • 5 tema bergerak",12,false);liveHint.setTextColor(muted());content.addView(liveHint);button("Pilih gaya live wallpaper",()->chooseLiveStyle());button("Preview & pasang live wallpaper",()->openLiveWallpaper());
-      section("Custom wallpaper");button("＋  Pilih foto dari galeri",()->pick(101));
+      LinearLayout search=row();search.setPadding(dp(16),dp(3),dp(16),dp(3));search.setBackground(shape(0x553e3a70,0x88c9b9ff,28));
+      TextView glassIcon=txt("⌕",25,true);glassIcon.setTextColor(0xffe6dcff);search.addView(glassIcon);
+      EditText query=new EditText(this);query.setSingleLine(true);query.setTextColor(Color.WHITE);query.setHintTextColor(0xffd0c8e9);query.setHint("Cari wallpaper...");query.setTextSize(14);query.setBackgroundColor(Color.TRANSPARENT);query.setPadding(dp(10),dp(12),dp(8),dp(12));search.addView(query,new LinearLayout.LayoutParams(0,-2,1));content.addView(search);
+      TextView catTitle=txt("Kategori populer",19,true);catTitle.setPadding(dp(2),dp(22),0,dp(5));content.addView(catTitle);
+      LinearLayout chips=row();HorizontalScrollView hsv=new HorizontalScrollView(this);hsv.setHorizontalScrollBarEnabled(false);
+      String[] visibleCats={"Semua","Pemandangan","Anime","Cityscapes","Life","Textures","Custom"};
+      for(String c:visibleCats){TextView x=txt(c,12,true);x.setPadding(dp(15),dp(10),dp(15),dp(10));x.setBackground(shape(category.equals(c)?0xff8069e8:0x553e3a70,0x88bcaaff,24));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,-2);p.setMargins(0,dp(10),dp(8),dp(12));chips.addView(x,p);x.setOnClickListener(v->{category=c;showWallpapers();});}
+      hsv.addView(chips);content.addView(hsv);
+      TextView popular=txt("✦  Wallpaper terbaru",20,true);popular.setPadding(dp(2),dp(12),0,dp(12));content.addView(popular);
+      LinearLayout grid=column();content.addView(grid);
+      Runnable refresh=()->{grid.removeAllViews();String q=query.getText().toString().toLowerCase(Locale.ROOT);ArrayList<Integer> filtered=new ArrayList<>();for(int i=0;i<names.length;i++)if((category.equals("Semua")||category.equals("Custom")||types[i].equals(category))&&names[i].toLowerCase(Locale.ROOT).contains(q))filtered.add(i);for(int k=0;k<filtered.size();k+=2){LinearLayout r=row();grid.addView(r);addTile(r,filtered.get(k));if(k+1<filtered.size())addTile(r,filtered.get(k+1));}};
+      refresh.run();query.addTextChangedListener(new android.text.TextWatcher(){public void beforeTextChanged(CharSequence a,int st,int count,int after){}public void onTextChanged(CharSequence a,int st,int before,int count){refresh.run();}public void afterTextChanged(android.text.Editable e){}});
+      section("LIVE WALLPAPERS");TextView live=txt("✧  Liquid Motion",18,true);live.setPadding(dp(16),dp(20),dp(16),dp(20));live.setBackground(shape(0x664c4386,0x99c4b3ff,24));content.addView(live);TextView liveHint=txt("Animasi cahaya dan lanskap bergerak",12,false);liveHint.setTextColor(muted());liveHint.setPadding(dp(4),dp(6),0,dp(6));content.addView(liveHint);button("Preview & pasang live wallpaper  ›",()->openLiveWallpaper());
+      section("WALLPAPER CUSTOM");button("＋  Pilih foto dari galeri",()->pick(101));
     }
-    void addTile(LinearLayout parent,int i){LinearLayout tile=column();tile.setPadding(dp(5),dp(5),dp(5),dp(12));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);lp.setMargins(dp(3),dp(4),dp(3),dp(4));parent.addView(tile,lp);View art=new Art(this,i);art.setBackground(shape(colors[i][1],0x55ffffff,24));tile.addView(art,new LinearLayout.LayoutParams(-1,dp(205)));TextView n=txt(names[i],14,true);n.setPadding(dp(3),dp(9),0,0);tile.addView(n);tile.setOnClickListener(v->{selected=i;showDetail();});}
+    void addTile(LinearLayout parent,int i){
+      LinearLayout tile=column();tile.setPadding(dp(5),dp(5),dp(5),dp(10));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);lp.setMargins(dp(3),dp(4),dp(3),dp(4));parent.addView(tile,lp);
+      View art=new Art(this,i);art.setBackground(shape(colors[i][1],0x99cbbaff,22));tile.addView(art,new LinearLayout.LayoutParams(-1,dp(215)));
+      TextView n=txt(names[i],14,true);n.setPadding(dp(5),dp(10),0,0);tile.addView(n);
+      TextView sub=txt(types[i]+"  ·  Wallpaper",11,false);sub.setTextColor(muted());sub.setPadding(dp(5),dp(3),0,0);tile.addView(sub);
+      tile.setOnClickListener(v->{selected=i;showDetail();});
+    }
     void showDetail(){content.removeAllViews();button("‹  Kembali ke koleksi",()->showWallpapers());TextView n=txt(custom==null?names[selected]:"My Custom Wallpaper",22,true);n.setPadding(0,dp(14),0,dp(12));content.addView(n);View art=new Art(this,selected);content.addView(art,new LinearLayout.LayoutParams(-1,dp(390)));button("Terapkan ke layar utama",()->apply(WallpaperManager.FLAG_SYSTEM));button("Terapkan ke layar kunci",()->apply(WallpaperManager.FLAG_LOCK));button("Terapkan ke keduanya",()->apply(WallpaperManager.FLAG_SYSTEM|WallpaperManager.FLAG_LOCK));}
     void chooseLiveStyle(){String[] styles={"Aurora Flow","Ocean Waves","Sunset Glow","Nebula","Monochrome"};new AlertDialog.Builder(this).setTitle("Pilih animasi").setItems(styles,(d,which)->{getSharedPreferences("wallify",0).edit().putInt("live_style",which).apply();Toast.makeText(this,"Tema "+styles[which]+" dipilih",Toast.LENGTH_SHORT).show();}).show();}
     void openLiveWallpaper(){startActivity(new Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,new ComponentName(this,LiveWallpaperService.class)));}
     void showSettings(){section("Appearance");for(String s:new String[]{"Gelap","Terang","Ikuti tema HP"})button((theme.equals(s.equals("Terang")?"light":s.equals("Gelap")?"dark":"system")?"✓  ":"")+"Tema "+s,()->{theme=s.equals("Terang")?"light":s.equals("Gelap")?"dark":"system";if(theme.equals("system"))theme=(getResources().getConfiguration().uiMode&32)!=0?"dark":"light";build();});section("Wallpaper");button("Pilih gaya live wallpaper",()->chooseLiveStyle());button("Preview & pasang live wallpaper",()->openLiveWallpaper());button("Pilih wallpaper custom",()->pick(101));section("Audio");button("Pilih musik dari HP",()->pick(102));button("Putar / jeda musik",()->toggleMusic());section("Interface");TextView drag=txt("Geser navbar di bagian bawah untuk memindahkan posisinya.",13,false);drag.setTextColor(muted());content.addView(drag);}
     void section(String s){TextView t=txt(s.toUpperCase(),11,true);t.setTextColor(0xff9696e8);t.setPadding(0,dp(22),0,dp(8));content.addView(t);}
-    void button(String s,Runnable a){TextView b=txt(s,14,true);b.setPadding(dp(16),dp(17),dp(16),dp(17));b.setBackground(shape(theme.equals("light")?0xffe8e5e1:0xff1b1d27,theme.equals("light")?0xffd6d1ca:0xff343746,20));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,dp(5),0,dp(5));content.addView(b,p);b.setOnClickListener(v->a.run());}
+    void button(String s,Runnable a){
+      TextView b=txt(s,14,true);b.setPadding(dp(16),dp(17),dp(16),dp(17));
+      b.setBackground(shape(theme.equals("light")?0xffe8e5f5:0x66413b70,theme.equals("light")?0xffc8c0e8:0x99b6a5ff,22));
+      LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,dp(6),0,dp(6));content.addView(b,p);b.setOnClickListener(v->a.run());
+    }
     class Art extends View{
       int idx;Paint p=new Paint(3);Art(Context c,int i){super(c);idx=i;}
       protected void onDraw(Canvas c){super.onDraw(c);if(custom!=null&&idx==selected){c.drawBitmap(custom,null,new Rect(0,0,getWidth(),getHeight()),p);return;}

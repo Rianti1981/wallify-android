@@ -22,20 +22,13 @@ public class MainActivity extends Activity {
     int selected=0; String category="Semua", theme="dark"; boolean settings=false; Bitmap custom;
     LinearLayout root,content,nav; TextView title,subtitle; float downX,downY; MediaPlayer player; Uri music;
     int bg(){return theme.equals("light")?0xfff4f2ef:0xff08090d;} int fg(){return theme.equals("light")?0xff171717:Color.WHITE;} int muted(){return theme.equals("light")?0xff6b6b6b:0xffa8a8b4;}
-    @Override public void onCreate(Bundle b){super.onCreate(b); applyImmersiveMode(); build();}
-    void applyImmersiveMode(){
-      Window w=getWindow();
-      if(Build.VERSION.SDK_INT>=30){w.setDecorFitsSystemWindows(false);WindowInsetsController c=w.getInsetsController();if(c!=null){c.hide(WindowInsets.Type.statusBars()|WindowInsets.Type.navigationBars());c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);}}
-      else{w.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);}
-    }
-    @Override public void onWindowFocusChanged(boolean hasFocus){super.onWindowFocusChanged(hasFocus);if(hasFocus)applyImmersiveMode();}
+    @Override public void onCreate(Bundle b){super.onCreate(b); build();}
     GradientDrawable shape(int c,int stroke,int r){GradientDrawable d=new GradientDrawable();d.setColor(c);d.setCornerRadius(dp(r));d.setStroke(dp(1),stroke);return d;}
     int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
     TextView txt(String s,int size,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(fg());if(bold)t.setTypeface(null,1);return t;}
     LinearLayout column(){LinearLayout l=new LinearLayout(this);l.setOrientation(1);return l;}
     LinearLayout row(){LinearLayout l=new LinearLayout(this);l.setOrientation(0);l.setGravity(Gravity.CENTER_VERTICAL);return l;}
     void build(){
-      applyImmersiveMode();
       root=column();root.setBackgroundColor(bg());
       LinearLayout header=column();header.setPadding(dp(20),dp(18),dp(20),dp(12));root.addView(header);
       TextView brand=txt("W A L L I F Y   /   3.0",11,true);brand.setTextColor(0xff9b9bff);header.addView(brand);

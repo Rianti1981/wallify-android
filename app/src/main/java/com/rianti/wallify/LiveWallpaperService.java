@@ -1,16 +1,93 @@
 package com.rianti.wallify;
+
 import android.service.wallpaper.WallpaperService;
 import android.view.SurfaceHolder;
 import android.graphics.*;
-import android.os.*;
+import android.os.Handler;
+import android.os.Looper;
+
 public class LiveWallpaperService extends WallpaperService {
- @Override public Engine onCreateEngine(){return new MotionEngine();}
- class MotionEngine extends Engine {
-  Handler h=new Handler(); boolean visible=false; long start=System.currentTimeMillis();
-  Runnable draw=new Runnable(){public void run(){render();}};
-  @Override public void onVisibilityChanged(boolean v){visible=v;if(v)h.post(draw);else h.removeCallbacks(draw);}
-  @Override public void onSurfaceChanged(SurfaceHolder sh,int f,int w,int he){super.onSurfaceChanged(sh,f,w,he);render();}
-  @Override public void onSurfaceDestroyed(SurfaceHolder sh){visible=false;h.removeCallbacks(draw);super.onSurfaceDestroyed(sh);}
-  void render(){SurfaceHolder sh=getSurfaceHolder();Canvas c=null;try{c=sh.lockCanvas();if(c!=null){float t=(System.currentTimeMillis()-start)/2200f;int w=c.getWidth(),he=c.getHeight();Paint p=new Paint(3);p.setShader(new LinearGradient(0,0,w,he,new int[]{0xff172b4d,0xff6b72a8,0xffd6a7a0},null,Shader.TileMode.CLAMP));c.drawRect(0,0,w,he,p);p.setShader(null);p.setColor(0x66ffffff);float x=(float)(w*(.5+.28*Math.sin(t)));float y=(float)(he*(.32+.08*Math.cos(t*.7)));c.drawCircle(x,y,w*.24f,p);p.setColor(0x448be0ff);c.drawCircle(w-x,he*.72f,w*.32f,p);p.setColor(0x22ffffff);c.drawRoundRect(w*.08f,he*.58f,w*.92f,he*.88f,w*.12f,w*.12f,p);}}catch(Exception ignored){}finally{if(c!=null)sh.unlockCanvasAndPost(c);}if(visible)h.postDelayed(draw,40);}
- }
+    @Override public Engine onCreateEngine() { return new MotionEngine(); }
+
+    class MotionEngine extends Engine {
+        private final Handler handler = new Handler(Looper.getMainLooper());
+        private final Paint background = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint glow = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint accent = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final long startedAt = System.currentTimeMillis();
+        private boolean visible;
+        private int width, height, style;
+        private final int[][] palettes = {
+            {0xff071b35, 0xff285b83, 0xffa77ac7},
+            {0xff032b38, 0xff087e8b, 0xff72c9bb},
+            {0xff321b45, 0xffb65370, 0xffffb36b},
+            {0xff10102c, 0xff45428b, 0xffb58bd8},
+            {0xff11151d, 0xff46515e, 0xffaab5c0}
+        };
+        private final Runnable frame = new Runnable() {
+            @Override public void run() {
+                if (!visible) return;
+                renderFrame();
+                handler.postDelayed(this, 42);
+            }
+        };
+
+        MotionEngine() {
+            style = getSharedPreferences("wallify", 0).getInt("live_style", 0);
+            glow.setColor(0x55ffffff);
+            accent.setColor(0x338be7ff);
+        }
+
+        @Override public void onVisibilityChanged(boolean isVisible) {
+            visible = isVisible;
+            handler.removeCallbacks(frame);
+            if (visible) handler.post(frame);
+        }
+
+        @Override public void onSurfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+            super.onSurfaceChanged(holder, format, w, h);
+            width = w; height = h;
+            int[] p = palettes[Math.max(0, Math.min(style, palettes.length - 1))];
+            background.setShader(new LinearGradient(0, 0, w, h, p[0], p[2], Shader.TileMode.CLAMP));
+            renderFrame();
+        }
+
+        private void renderFrame() {
+            SurfaceHolder holder = getSurfaceHolder();
+            Canvas canvas = null;
+            try {
+                canvas = holder.lockCanvas();
+                if (canvas == null || width <= 0 || height <= 0) return;
+                float t = (System.currentTimeMillis() - startedAt) / 5000f;
+                int[] p = palettes[Math.max(0, Math.min(style, palettes.length - 1))];
+                canvas.drawRect(0, 0, width, height, background);
+                float x = (float)(width * (0.5 + 0.30 * Math.sin(t)));
+                float y = (float)(height * (0.34 + 0.10 * Math.cos(t * 0.72)));
+                glow.setColor(0x55ffffff);
+                canvas.drawCircle(x, y, width * 0.22f, glow);
+                accent.setColor((style == 1 ? 0x4476f2d0 : 0x338be7ff));
+                float x2 = (float)(width * (0.5 + 0.28 * Math.cos(t * 0.63 + 1.2)));
+                float y2 = (float)(height * (0.70 + 0.06 * Math.sin(t * 0.8)));
+                canvas.drawCircle(x2, y2, width * 0.27f, accent);
+                glow.setColor(0x18ffffff);
+                canvas.drawRoundRect(width * 0.08f, height * 0.57f, width * 0.92f,
+                    height * 0.89f, width * 0.12f, width * 0.12f, glow);
+            } catch (RuntimeException ignored) {
+            } finally {
+                if (canvas != null) holder.unlockCanvasAndPost(canvas);
+            }
+        }
+
+        @Override public void onSurfaceDestroyed(SurfaceHolder holder) {
+            visible = false;
+            handler.removeCallbacks(frame);
+            super.onSurfaceDestroyed(holder);
+        }
+
+        @Override public void onDestroy() {
+            visible = false;
+            handler.removeCallbacks(frame);
+            super.onDestroy();
+        }
+    }
 }

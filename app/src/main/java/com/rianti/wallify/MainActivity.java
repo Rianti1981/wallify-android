@@ -50,8 +50,7 @@ public class MainActivity extends Activity {
         brand.setLetterSpacing(0.18f);
         page.addView(brand);
 
-        TextView title = text("Wallpaper yang
-bikin layar hidup.", 29, Color.WHITE, true);
+        TextView title = text("Wallpaper yang\\nbikin layar hidup.", 29, Color.WHITE, true);
         title.setPadding(0, dp(12), 0, dp(6));
         page.addView(title);
         TextView sub = text("Pilih desain favorit, lalu pasang langsung.", 14, 0xFFADB6CC, false);
